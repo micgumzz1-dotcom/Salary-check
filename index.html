@@ -6,248 +6,136 @@
   <title>ตรวจสอบเงินเดือน</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Sarabun', sans-serif; background: #f5f7fa; min-height: 100vh; }
 
-    body {
-      font-family: 'Sarabun', sans-serif;
-      background: #f5f7fa;
-      min-height: 100vh;
-      padding: 0;
-    }
-
-    /* Header */
     .header {
       background: linear-gradient(135deg, #00B900 0%, #00a000 100%);
-      color: white;
-      padding: 20px 20px 28px;
-      text-align: center;
+      color: white; padding: 20px 20px 28px; text-align: center;
     }
     .header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
     .header p { font-size: 13px; opacity: 0.85; }
 
-    /* Card container */
     .card {
-      background: white;
-      border-radius: 16px;
-      margin: -14px 16px 16px;
-      padding: 20px;
+      background: white; border-radius: 16px;
+      margin: -14px 16px 16px; padding: 20px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
 
-    /* Month selector */
     .month-section { margin-bottom: 16px; }
     .month-label { font-size: 13px; color: #666; margin-bottom: 8px; display: block; }
+    .month-selector { display: flex; align-items: center; gap: 10px; }
 
-    .month-selector {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
     .month-nav {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      border: 1.5px solid #00B900;
-      background: white;
-      color: #00B900;
-      font-size: 18px;
-      cursor: pointer;
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid #00B900; background: white; color: #00B900;
+      font-size: 18px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.15s;
+      flex-shrink: 0; transition: all 0.15s;
     }
     .month-nav:active { background: #00B900; color: white; }
 
     .month-display {
-      flex: 1;
-      text-align: center;
-      background: #f0faf0;
-      border: 1.5px solid #00B900;
-      border-radius: 10px;
-      padding: 8px 12px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #007a00;
-      cursor: pointer;
-      position: relative;
+      flex: 1; text-align: center; background: #f0faf0;
+      border: 1.5px solid #00B900; border-radius: 10px;
+      padding: 8px 12px; font-size: 16px; font-weight: 600;
+      color: #007a00; cursor: pointer;
     }
 
-    /* Hidden grid for month picking */
     .month-picker-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 100;
-      align-items: flex-end;
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45); z-index: 100; align-items: flex-end;
     }
     .month-picker-overlay.open { display: flex; }
 
     .month-picker-sheet {
-      background: white;
-      width: 100%;
-      border-radius: 20px 20px 0 0;
-      padding: 20px;
-      max-height: 85vh;
-      overflow-y: auto;
+      background: white; width: 100%; border-radius: 20px 20px 0 0;
+      padding: 20px; max-height: 85vh; overflow-y: auto;
     }
     .sheet-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 16px;
     }
     .sheet-title { font-size: 16px; font-weight: 700; color: #333; }
     .sheet-close {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      border: none;
-      background: #eee;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 50%;
+      border: none; background: #eee; font-size: 18px; cursor: pointer;
     }
 
     .year-nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 16px;
+      display: flex; align-items: center;
+      justify-content: center; gap: 16px; margin-bottom: 16px;
     }
     .year-btn {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      border: 1.5px solid #ccc;
-      background: white;
-      font-size: 16px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1.5px solid #ccc; background: white;
+      font-size: 16px; cursor: pointer;
     }
     .year-display { font-size: 18px; font-weight: 700; color: #333; }
 
-    .month-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
+    .month-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     .month-btn {
-      padding: 12px 6px;
-      border-radius: 10px;
-      border: 1.5px solid #eee;
-      background: white;
-      font-size: 14px;
-      font-family: 'Sarabun', sans-serif;
-      cursor: pointer;
-      transition: all 0.15s;
-      color: #333;
+      padding: 12px 6px; border-radius: 10px; border: 1.5px solid #eee;
+      background: white; font-size: 14px; font-family: 'Sarabun', sans-serif;
+      cursor: pointer; transition: all 0.15s; color: #333;
     }
     .month-btn:active { transform: scale(0.95); }
-    .month-btn.selected {
-      background: #00B900;
-      color: white;
-      border-color: #00B900;
-      font-weight: 700;
-    }
+    .month-btn.selected { background: #00B900; color: white; border-color: #00B900; font-weight: 700; }
     .month-btn.future { opacity: 0.35; pointer-events: none; }
 
-    /* Buttons */
     .btn-primary {
-      width: 100%;
-      padding: 13px;
-      background: #00B900;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-family: 'Sarabun', sans-serif;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.15s;
-      margin-bottom: 10px;
+      width: 100%; padding: 13px; background: #00B900; color: white;
+      border: none; border-radius: 12px; font-size: 16px;
+      font-family: 'Sarabun', sans-serif; font-weight: 700;
+      cursor: pointer; transition: background 0.15s; margin-bottom: 10px;
     }
     .btn-primary:active { background: #009000; }
     .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
 
     .btn-request {
-      width: 100%;
-      padding: 13px;
-      background: white;
-      color: #e55;
-      border: 1.5px solid #e55;
-      border-radius: 12px;
-      font-size: 15px;
-      font-family: 'Sarabun', sans-serif;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s;
+      width: 100%; padding: 13px; background: white; color: #e55;
+      border: 1.5px solid #e55; border-radius: 12px; font-size: 15px;
+      font-family: 'Sarabun', sans-serif; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
     }
     .btn-request:active { background: #fff0f0; }
 
-    /* Status / Loading */
     #status {
-      text-align: center;
-      color: #888;
-      font-size: 14px;
-      padding: 8px 0;
-      min-height: 24px;
+      text-align: center; color: #888; font-size: 14px;
+      padding: 8px 0; min-height: 24px;
     }
 
-    /* Result table */
     .result-card {
-      background: white;
-      border-radius: 16px;
-      margin: 0 16px 16px;
-      overflow: hidden;
+      background: white; border-radius: 16px;
+      margin: 0 16px 16px; overflow: hidden;
       box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     }
     .result-title {
-      background: #f8f8f8;
-      border-bottom: 1px solid #eee;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: #666;
-      font-weight: 600;
+      background: #f8f8f8; border-bottom: 1px solid #eee;
+      padding: 12px 16px; font-size: 13px; color: #666; font-weight: 600;
     }
 
     table { width: 100%; border-collapse: collapse; }
     tr:not(:last-child) td { border-bottom: 1px solid #f0f0f0; }
-    td {
-      padding: 11px 16px;
-      font-size: 14px;
-      color: #333;
-    }
+    td { padding: 11px 16px; font-size: 14px; color: #333; }
     td:first-child { color: #666; width: 45%; }
     td:last-child { font-weight: 600; text-align: right; }
 
-    /* Error */
     .error-box {
-      background: #fff5f5;
-      border: 1px solid #fcc;
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: #c00;
-      font-size: 14px;
-      text-align: center;
+      background: #fff5f5; border: 1px solid #fcc;
+      border-radius: 12px; padding: 14px 16px;
+      color: #c00; font-size: 14px; text-align: center;
     }
 
-    /* Toast notification */
     .toast {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
+      position: fixed; bottom: 30px; left: 50%;
       transform: translateX(-50%) translateY(80px);
-      background: #333;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 24px;
-      font-size: 14px;
-      transition: transform 0.3s ease;
-      z-index: 999;
-      white-space: nowrap;
+      background: #333; color: white; padding: 12px 24px;
+      border-radius: 24px; font-size: 14px;
+      transition: transform 0.3s ease; z-index: 999; white-space: nowrap;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
-
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap');
   </style>
 </head>
 <body>
@@ -268,7 +156,6 @@
       <button class="month-nav" onclick="shiftMonth(1)">›</button>
     </div>
   </div>
-
   <button class="btn-primary" id="loadBtn" onclick="loadSalary()" disabled>ดูข้อมูลเงินเดือน</button>
   <button class="btn-request" onclick="requestCorrection()">✏️ แจ้งขอแก้ไขข้อมูล</button>
   <div id="status"></div>
@@ -276,7 +163,6 @@
 
 <div id="result"></div>
 
-<!-- Month picker overlay -->
 <div class="month-picker-overlay" id="pickerOverlay" onclick="maybeClose(event)">
   <div class="month-picker-sheet">
     <div class="sheet-header">
@@ -292,49 +178,24 @@
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
   const LIFF_ID = "2009956605-OKD67Yoz";
   const API_URL = "https://script.google.com/macros/s/AKfycbwjD8VpA0Q_xT7j0rUGkVVs1DlIcuVGp-FfutIm9ITs3f2i_5cUecctBO6eK62r2wJ_Lw/exec";
-  // *** เปลี่ยน token ใหม่ก่อนใช้งาน ***
-  async function requestCorrection() {
-  if (!lineUserId) { showToast("กรุณารอสักครู่..."); return; }
-
-  const monthText = THAI_MONTHS[selectedMonth - 1] + " " + adToBE(selectedYear);
-  const msg = `📝 แจ้งขอแก้ไขข้อมูลเงินเดือน\n👤 ชื่อ: ${lineDisplayName}\n🆔 Line ID: ${lineUserId}\n📅 เดือน: ${monthText}\n\nกรุณาตรวจสอบและดำเนินการแก้ไข`;
-
-  try {
-    // ส่งแค่ msg — token อยู่ใน Apps Script ฝั่ง server
-    const res = await fetch(`${API_URL}?action=notify&msg=${encodeURIComponent(msg)}`);
-    const json = await res.json();
-    if (json.notifyOk) {
-      showToast("✅ ส่งคำขอแก้ไขแล้ว รอการติดต่อกลับนะครับ");
-    } else {
-      showToast("⚠️ ส่งไม่สำเร็จ กรุณาติดต่อ HR โดยตรง");
-    }
-  } catch(e) {
-    showToast("⚠️ ส่งไม่สำเร็จ กรุณาติดต่อ HR โดยตรง");
-  }
-}
-
 
   const THAI_MONTHS = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
                        "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
 
   let lineUserId = null;
   let lineDisplayName = "";
-  // selectedYear/Month = AD year, AD month (1-12)
-  let selectedYear, selectedMonth;
-  let pickerYear;
+  let selectedYear, selectedMonth, pickerYear;
 
   const now = new Date();
   selectedYear = now.getFullYear();
   selectedMonth = now.getMonth() + 1;
 
   function adToBE(y) { return y + 543; }
-  function beToAD(y) { return y - 543; }
 
   function updateMonthDisplay() {
     document.getElementById("monthDisplayText").textContent =
@@ -348,7 +209,6 @@
     updateMonthDisplay();
   }
 
-  // Picker
   function openPicker() {
     pickerYear = selectedYear;
     renderPickerYear();
@@ -372,7 +232,6 @@
       const btn = document.createElement("button");
       btn.className = "month-btn";
       btn.textContent = THAI_MONTHS[m - 1];
-      // Disable future months
       if (pickerYear > now.getFullYear() ||
           (pickerYear === now.getFullYear() && m > now.getMonth() + 1)) {
         btn.classList.add("future");
@@ -390,7 +249,6 @@
     }
   }
 
-  // Format month for API: YYYY-MM (AD)
   function getApiMonth() {
     return selectedYear + "-" + String(selectedMonth).padStart(2, "0");
   }
@@ -428,7 +286,6 @@
         return;
       }
 
-      // Build table (key-value style from first row)
       const row = data[0];
       let rows = "";
       Object.entries(row).forEach(([k, v]) => {
@@ -456,8 +313,7 @@
     const msg = `📝 แจ้งขอแก้ไขข้อมูลเงินเดือน\n👤 ชื่อ: ${lineDisplayName}\n🆔 Line ID: ${lineUserId}\n📅 เดือน: ${monthText}\n\nกรุณาตรวจสอบและดำเนินการแก้ไข`;
 
     try {
-      // ส่งผ่าน Google Apps Script เพื่อเลี่ยง CORS
-      const res = await fetch(`${API_URL}?action=notify&token=${encodeURIComponent(LINE_NOTIFY_TOKEN)}&targetId=${NOTIFY_TARGET_LINE_ID}&msg=${encodeURIComponent(msg)}`);
+      const res = await fetch(`${API_URL}?action=notify&msg=${encodeURIComponent(msg)}`);
       const json = await res.json();
       if (json.notifyOk) {
         showToast("✅ ส่งคำขอแก้ไขแล้ว รอการติดต่อกลับนะครับ");
