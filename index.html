@@ -299,8 +299,26 @@
   const LIFF_ID = "2009956605-OKD67Yoz";
   const API_URL = "https://script.google.com/macros/s/AKfycbwjD8VpA0Q_xT7j0rUGkVVs1DlIcuVGp-FfutIm9ITs3f2i_5cUecctBO6eK62r2wJ_Lw/exec";
   // *** เปลี่ยน token ใหม่ก่อนใช้งาน ***
-  const LINE_NOTIFY_TOKEN = "YOUR_NEW_TOKEN_HERE";
-  const NOTIFY_TARGET_LINE_ID = "Uac8966b8f62fbd472fe34818f6c88261";
+  async function requestCorrection() {
+  if (!lineUserId) { showToast("กรุณารอสักครู่..."); return; }
+
+  const monthText = THAI_MONTHS[selectedMonth - 1] + " " + adToBE(selectedYear);
+  const msg = `📝 แจ้งขอแก้ไขข้อมูลเงินเดือน\n👤 ชื่อ: ${lineDisplayName}\n🆔 Line ID: ${lineUserId}\n📅 เดือน: ${monthText}\n\nกรุณาตรวจสอบและดำเนินการแก้ไข`;
+
+  try {
+    // ส่งแค่ msg — token อยู่ใน Apps Script ฝั่ง server
+    const res = await fetch(`${API_URL}?action=notify&msg=${encodeURIComponent(msg)}`);
+    const json = await res.json();
+    if (json.notifyOk) {
+      showToast("✅ ส่งคำขอแก้ไขแล้ว รอการติดต่อกลับนะครับ");
+    } else {
+      showToast("⚠️ ส่งไม่สำเร็จ กรุณาติดต่อ HR โดยตรง");
+    }
+  } catch(e) {
+    showToast("⚠️ ส่งไม่สำเร็จ กรุณาติดต่อ HR โดยตรง");
+  }
+}
+
 
   const THAI_MONTHS = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
                        "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
