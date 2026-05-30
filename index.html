@@ -263,46 +263,56 @@
     updateMonthDisplay();
   }
 
-  async function loadSalary() {
-    if (!lineUserId) return;
-    document.getElementById("status").textContent = "⏳ กำลังโหลดข้อมูล...";
-    document.getElementById("result").innerHTML = "";
+async function loadSalary() {
+  if (!lineUserId) return;
+  document.getElementById("status").textContent = "⏳ กำลังโหลดข้อมูล...";
+  document.getElementById("result").innerHTML = "";
 
-    try {
-      const res = await fetch(`${API_URL}?lineId=${lineUserId}&month=${getApiMonth()}`);
-      const json = await res.json();
-      document.getElementById("status").textContent = "";
+  try {
+    const url = `${API_URL}?lineId=${encodeURIComponent(lineUserId)}&month=${getApiMonth()}`;
+    const res = await fetch(url, {
+      redirect: "follow",
+      method: "GET",
+    });
 
-      if (json.error) {
-        document.getElementById("result").innerHTML =
-          `<div style="margin:0 16px"><div class="error-box">⚠️ ${json.error}</div></div>`;
-        return;
-      }
+    const text = await res.text(); // อ่านเป็น text ก่อน
+    const json = JSON.parse(text); // แล้วค่อย parse
 
-      const data = json.data;
-if (!data || typeof data !== "object" || Object.keys(data).length === 0) {
-          document.getElementById("result").innerHTML =
-            `<div style="margin:0 16px"><div class="error-box">ไม่พบข้อมูลเดือนนี้</div></div>`;
-          return;
-        }
-        
-        // วนแสดงแบบ key-value
-        let rows = "";
-        Object.entries(data).forEach(([k, v]) => {
-          rows += `<tr><td>${k}</td><td>${v ?? "-"}</td></tr>`;
-        });
-        
-        document.getElementById("result").innerHTML = `
-          <div class="result-card">
-            <div class="result-title">📋 ข้อมูลเงินเดือน — ${THAI_MONTHS[selectedMonth-1]} ${adToBE(selectedYear)}</div>
-            <table>${rows}</table>
-          </div>`;
-    } catch (e) {
-      document.getElementById("status").textContent = "";
+    document.getElementById("status").textContent = "";
+
+    if (json.error) {
       document.getElementById("result").innerHTML =
-        `<div style="margin:0 16px"><div class="error-box">เกิดข้อผิดพลาด กรุณาลองใหม่</div></div>`;
+        `<div style="margin:0 16px"><div class="error-box">⚠️ ${json.error}</div></div>`;
+      return;
     }
+
+    const data = json.data;
+    if (!data || typeof data !== "object" || Object.keys(data).length === 0) {
+      document.getElementById("result").innerHTML =
+        `<div style="margin:0 16px"><div class="error-box">ไม่พบข้อมูลเดือนนี้</div></div>`;
+      return;
+    }
+
+    // กรองแถวที่ไม่มีข้อมูลออก และข้ามแถว header
+    let rows = "";
+    Object.entries(data).forEach(([k, v]) => {
+      if (!k.trim() || k === "รายการ") return; // ข้าม header row
+      if (v === "" || v === null || v === undefined) return; // ข้ามแถวว่าง
+      rows += `<tr><td>${k}</td><td>${Number(v) === v ? v.toLocaleString('th-TH') : v}</td></tr>`;
+    });
+
+    document.getElementById("result").innerHTML = `
+      <div class="result-card">
+        <div class="result-title">📋 ข้อมูลเงินเดือน — ${THAI_MONTHS[selectedMonth-1]} ${adToBE(selectedYear)}</div>
+        <table>${rows}</table>
+      </div>`;
+
+  } catch (e) {
+    document.getElementById("status").textContent = "";
+    document.getElementById("result").innerHTML =
+      `<div style="margin:0 16px"><div class="error-box">⚠️ ข้อผิดพลาด: ${e.message}</div></div>`;
   }
+}
 
   async function requestCorrection() {
     if (!lineUserId) { showToast("กรุณารอสักครู่..."); return; }
