@@ -280,25 +280,23 @@
       }
 
       const data = json.data;
-      if (!data || data.length === 0) {
-        document.getElementById("result").innerHTML =
-          `<div style="margin:0 16px"><div class="error-box">ไม่พบข้อมูลเดือนนี้</div></div>`;
-        return;
-      }
-
-      const row = data[0];
-      let rows = "";
-      Object.entries(row).forEach(([k, v]) => {
-        if (k && String(k).trim()) {
-          rows += `<tr><td>${k}</td><td>${v ?? "-"}</td></tr>`;
+        if (!data || Object.keys(data).length === 0) {
+          document.getElementById("result").innerHTML =
+            `<div style="margin:0 16px"><div class="error-box">ไม่พบข้อมูลเดือนนี้</div></div>`;
+          return;
         }
-      });
-
-      document.getElementById("result").innerHTML = `
-        <div class="result-card">
-          <div class="result-title">📋 ข้อมูลเงินเดือน — ${THAI_MONTHS[selectedMonth-1]} ${adToBE(selectedYear)}</div>
-          <table>${rows}</table>
-        </div>`;
+        
+        // วนแสดงแบบ key-value
+        let rows = "";
+        Object.entries(data).forEach(([k, v]) => {
+          rows += `<tr><td>${k}</td><td>${v ?? "-"}</td></tr>`;
+        });
+        
+        document.getElementById("result").innerHTML = `
+          <div class="result-card">
+            <div class="result-title">📋 ข้อมูลเงินเดือน — ${THAI_MONTHS[selectedMonth-1]} ${adToBE(selectedYear)}</div>
+            <table>${rows}</table>
+          </div>`;
     } catch (e) {
       document.getElementById("status").textContent = "";
       document.getElementById("result").innerHTML =
