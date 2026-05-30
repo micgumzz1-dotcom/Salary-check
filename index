@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตรวจสอบเงินเดือน</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    #error { color: red; }
+  </style>
+</head>
+<body>
+  <h2>สลิปเงินเดือน</h2>
+
+  <label>เลือกเดือน:
+    <input type="month" id="monthPicker">
+  </label>
+  <button onclick="loadSalary()">ดูข้อมูล</button>
+
+  <div id="status">กำลังโหลด...</div>
+  <div id="result"></div>
+
+  <script>
+    // ใส่ค่าเหล่านี้
+    const LIFF_ID = "YOUR_LIFF_ID";   // ← ใส่ LIFF ID จาก Line Developers
+    const API_URL = "https://script.google.com/macros/s/AKfycbwjD8VpA0Q_xT7j0rUGkVVs1DlIcuVGp-FfutIm9ITs3f2i_5cUecctBO6eK62r2wJ_Lw/exec"; // ← ใส่ URL จาก Google Apps Script
+
+    let lineUserId = null;
+
+    async function init() {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+      const profile = await liff.getProfile();
+      lineUserId = profile.userId;
+      document.getElementById("status").textContent = "";
+
+      // ตั้งเดือนปัจจุบันเป็นค่าเริ่มต้น
+      const now = new Date();
+      document.getElementById("monthPicker").value = 
+        now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+    }
+
+    async function loadSalary() {
+      if (!lineUserId) return;
+      const month = document.getElementById("monthPicker").value;
+      document.getElementById("status").textContent = "กำลังโหลด...";
+      document.getElementById("result").innerHTML = "";
+
+      const res = await fetch(`${API_URL}?lineId=${lineUserId}&month=${month}`);
+      const json = await res.json();
+
+      document.getElementById("status").textContent = "";
+
+      if (json.error) {
+        document.getElementById("result").innerHTML = 
+          `<p id="error">${json.error}</p>`;
+        return;
+      }
+
+      // สร้างตาราง
+      const data = json.data;
+      if (!data || data.length === 0) {
+        document.getElementById("result").innerHTML = "<p>ไม่พบข้อมูล</p>";
+        return;
+      }
+
+      const headers = Object.keys(data[0]);
+      let html = "<table><tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+      data.forEach(row => {
+        html += "<tr>" + headers.map(h => `<td>${row[h] ?? ""}</td>`).join("") + "</tr>";
+      });
+      html += "</table>";
+      document.getElementById("result").innerHTML = html;
+    }
+
+    init();
+  </script>
+</body>
+</html>
