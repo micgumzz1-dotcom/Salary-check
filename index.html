@@ -280,7 +280,7 @@
       }
 
       const data = json.data;
-        if (!data || Object.keys(data).length === 0) {
+if (!data || typeof data !== "object" || Object.keys(data).length === 0) {
           document.getElementById("result").innerHTML =
             `<div style="margin:0 16px"><div class="error-box">ไม่พบข้อมูลเดือนนี้</div></div>`;
           return;
