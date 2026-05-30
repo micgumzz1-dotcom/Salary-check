@@ -26,7 +26,7 @@
 
   <script>
     // ใส่ค่าเหล่านี้
-    const LIFF_ID = "YOUR_LIFF_ID";   // ← ใส่ LIFF ID จาก Line Developers
+    const LIFF_ID = "2009956605-OKD67Yoz";   // ← ใส่ LIFF ID จาก Line Developers
     const API_URL = "https://script.google.com/macros/s/AKfycbwjD8VpA0Q_xT7j0rUGkVVs1DlIcuVGp-FfutIm9ITs3f2i_5cUecctBO6eK62r2wJ_Lw/exec"; // ← ใส่ URL จาก Google Apps Script
 
     let lineUserId = null;
